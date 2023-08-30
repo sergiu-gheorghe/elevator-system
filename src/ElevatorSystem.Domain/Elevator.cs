@@ -54,30 +54,21 @@ public class Elevator : IElevator
     
     public void Move()
     {
-        if (CurrentNumberOfPeople > MaxAllowedPeople)
-        {
-            throw new Exception($"Cannot move, number of people is more then {MaxAllowedPeople}");
-        }
-        
+        CheckAllowedNumberOfPeople();
+
         while (elevatorCalls.Any())
         {
             var (floorNumber, numberOfPersons) = elevatorCalls.First();
             if (CurrentFloor < floorNumber)
             {
                 MovingDirection = MovingDirection.Up;
-                
-                var elevatorStatus = new ElevatorStatus(Name, MovingDirection, CurrentFloor, CurrentNumberOfPeople);
-                elevatorScreen.Display(elevatorStatus);
-                
+                DisplayCurrentStatus();
                 CurrentFloor++;
             }
             else if(CurrentFloor > floorNumber)
             {
                 MovingDirection = MovingDirection.Down;
-                
-                var elevatorStatus = new ElevatorStatus(Name, MovingDirection, CurrentFloor, CurrentNumberOfPeople);
-                elevatorScreen.Display(elevatorStatus);
-                
+                DisplayCurrentStatus();
                 CurrentFloor--;
             }
             else
@@ -86,9 +77,22 @@ public class Elevator : IElevator
                 MovingDirection = MovingDirection.Stopped;
                 CurrentNumberOfPeople -= numberOfPersons;
                 
-                var elevatorStatus = new ElevatorStatus(Name, MovingDirection, CurrentFloor, CurrentNumberOfPeople, numberOfPersons);
-                elevatorScreen.Display(elevatorStatus);
+                DisplayCurrentStatus(numberOfPersons);
             }
         }
+    }
+    
+    private void CheckAllowedNumberOfPeople()
+    {
+        if (CurrentNumberOfPeople > MaxAllowedPeople)
+        {
+            throw new ElevatorException($"Cannot move, number of people is more then {MaxAllowedPeople}");
+        }
+    }
+    
+    private void DisplayCurrentStatus(int numberOfPersonsLeavingTheElevator = 0)
+    {
+        var elevatorStatus = new ElevatorStatus(Name, MovingDirection, CurrentFloor, CurrentNumberOfPeople, numberOfPersonsLeavingTheElevator);
+        elevatorScreen.Display(elevatorStatus);
     }
 }
